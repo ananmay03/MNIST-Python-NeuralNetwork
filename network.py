@@ -16,6 +16,29 @@ class NeuralNetwork:
         self.weights_hidden_output = np.random.randn(self.hidden_size, self.output_size) * 0.01
         self.bias_output = np.zeros((1, self.output_size))
 
+    def relu(self, x):
+        """ReLU Activation Function: max(0, x)"""
+        return np.maximum(0, x)
+
+    def softmax(self, x):
+        """Softmax Activation Function"""
+        exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))  # Stability trick
+        return exp_x / np.sum(exp_x, axis=1, keepdims=True)
+
+    def forward_propagation(self, X):
+        """
+        Performs forward propagation and returns output probabilities.
+        """
+        # Compute hidden layer activation
+        self.hidden_layer_input = np.dot(X, self.weights_input_hidden) + self.bias_hidden
+        self.hidden_layer_output = self.relu(self.hidden_layer_input)
+
+        # Compute output layer activation
+        self.output_layer_input = np.dot(self.hidden_layer_output, self.weights_hidden_output) + self.bias_output
+        self.output_layer_output = self.softmax(self.output_layer_input)
+
+        return self.output_layer_output
+
     def summary(self):
         """
         Prints a summary of the network structure and parameters.
@@ -35,7 +58,15 @@ class NeuralNetwork:
         total += (self.hidden_size * self.output_size) + self.output_size  # Hidden to Output Layer
         return total
 
-# Test the network architecture
+# Test the network with a dummy input
 if __name__ == "__main__":
     nn = NeuralNetwork()
     nn.summary()
+
+    # Create a dummy input (1 sample, 784 pixels)
+    dummy_input = np.random.rand(1, 784)
+    output_probs = nn.forward_propagation(dummy_input)
+
+    print("\nSample Prediction (Probabilities):")
+    print(output_probs)
+    print("\nPredicted Digit:", np.argmax(output_probs))
