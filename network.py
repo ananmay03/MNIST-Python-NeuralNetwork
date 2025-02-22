@@ -18,8 +18,12 @@ class NeuralNetwork:
         self.bias_output = np.zeros((1, self.output_size))
 
     def relu(self, x):
-        """ReLU Activation Function: max(0, x)"""
+        """ReLU Activation Function"""
         return np.maximum(0, x)
+
+    def relu_derivative(self, x):
+        """Derivative of ReLU"""
+        return (x > 0).astype(float)
 
     def softmax(self, x):
         """Softmax Activation Function"""
@@ -46,6 +50,44 @@ class NeuralNetwork:
 
         return self.output_layer_output
 
+    def backpropagation(self, X, y_true, y_pred):
+        """
+        Performs backpropagation and updates weights and biases.
+        """
+        m = X.shape[0]  # Batch size
+
+        # Compute error for output layer
+        delta_output = (y_pred - y_true) / m  # Shape: (batch_size, 10)
+
+        # Compute gradient for weights from hidden to output
+        grad_weights_hidden_output = np.dot(self.hidden_layer_output.T, delta_output)
+        grad_bias_output = np.sum(delta_output, axis=0, keepdims=True)
+
+        # Compute error for hidden layer
+        delta_hidden = np.dot(delta_output, self.weights_hidden_output.T) * self.relu_derivative(self.hidden_layer_input)
+
+        # Compute gradient for weights from input to hidden
+        grad_weights_input_hidden = np.dot(X.T, delta_hidden)
+        grad_bias_hidden = np.sum(delta_hidden, axis=0, keepdims=True)
+
+        # Update weights and biases using Gradient Descent
+        self.weights_hidden_output -= self.learning_rate * grad_weights_hidden_output
+        self.bias_output -= self.learning_rate * grad_bias_output
+        self.weights_input_hidden -= self.learning_rate * grad_weights_input_hidden
+        self.bias_hidden -= self.learning_rate * grad_bias_hidden
+
+    def train(self, X, y, epochs=10):
+        """
+        Trains the neural network using the dataset.
+        """
+        for epoch in range(epochs):
+            y_pred = self.forward_propagation(X)  # Forward pass
+            loss = self.cross_entropy_loss(y, y_pred)  # Compute loss
+            self.backpropagation(X, y, y_pred)  # Backpropagation
+
+            if epoch % 1 == 0:
+                print(f"Epoch {epoch+1}/{epochs} - Loss: {loss:.4f}")
+
     def summary(self):
         """
         Prints a summary of the network structure and parameters.
@@ -65,23 +107,14 @@ class NeuralNetwork:
         total += (self.hidden_size * self.output_size) + self.output_size  # Hidden to Output Layer
         return total
 
-# Test the network with a dummy input and dummy label
+# Test the network with a dummy training run
 if __name__ == "__main__":
     nn = NeuralNetwork()
     nn.summary()
 
-    # Create a dummy input (1 sample, 784 pixels)
-    dummy_input = np.random.rand(1, 784)
-    output_probs = nn.forward_propagation(dummy_input)
+    # Create a dummy dataset (10 samples, 784 features)
+    X_train = np.random.rand(10, 784)
+    y_train = np.zeros((10, 10))
+    y_train[np.arange(10), np.random.randint(0, 10, size=10)] = 1  # Random one-hot labels
 
-    # Dummy one-hot encoded label (e.g., correct label is '3')
-    dummy_label = np.zeros((1, 10))
-    dummy_label[0, 3] = 1  # Setting the correct class to 1
-
-    # Compute loss
-    loss = nn.cross_entropy_loss(dummy_label, output_probs)
-
-    print("\nSample Prediction (Probabilities):")
-    print(output_probs)
-    print("\nPredicted Digit:", np.argmax(output_probs))
-    print("\nCross-Entropy Loss:", loss)
+    nn.train(X_train, y_train, epochs=5)
