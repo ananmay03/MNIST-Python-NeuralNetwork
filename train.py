@@ -21,7 +21,7 @@ def evaluate_model(nn, X, y):
     print(f"Test Accuracy: {accuracy * 100:.2f}%")
     return predicted_labels, true_labels
 
-def visualize_predictions_grid(X, true_labels, predicted_labels, grid_size=(10, 10)):
+def visualize_predictions_grid(X, true_labels, predicted_labels, grid_size=(10, 10), filename="example_visualization.png"):
     """
     Visualizes images in a grid with their true and predicted labels.
     
@@ -43,6 +43,7 @@ def visualize_predictions_grid(X, true_labels, predicted_labels, grid_size=(10, 
                 axes[i, j].set_title(f"T:{true_labels[idx]}\nP:{predicted_labels[idx]}", fontsize=8, pad=5)
                 axes[i, j].axis('off')
     plt.tight_layout(pad=2.0)
+    plt.savefig(filename, dpi=300, bbox_inches='tight')
     plt.show()
 
 if __name__ == "__main__":
