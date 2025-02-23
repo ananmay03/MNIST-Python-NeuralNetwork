@@ -38,9 +38,9 @@ if __name__ == "__main__":
     print("Starting Hyperparameter Tuning...\n")
     
     # Define hyperparameters to test
-    learning_rates = [0.00005, 0.0001, 0.0002]
-    hidden_sizes = [128, 256]
-    batch_sizes = [32, 64]
+    learning_rates = [0.00025] 
+    hidden_sizes = [512] 
+    batch_sizes = [32]
 
     results = {}
 
@@ -50,7 +50,7 @@ if __name__ == "__main__":
                 print(f"\nTraining with learning_rate={lr}, hidden_size={hs}, batch_size={bs}")
                 nn = NeuralNetwork(hidden_size=hs, learning_rate=lr, clip_value=5)
                 # Train for a few epochs (e.g., 5 epochs for quick tuning)
-                nn.train(X_train, y_train, epochs=5, batch_size=bs)
+                nn.train(X_train, y_train, epochs=20, batch_size=bs)
                 acc = evaluate_model(nn, X_test, y_test)
                 results[(lr, hs, bs)] = acc
 
